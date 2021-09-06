@@ -1,6 +1,6 @@
-import 'package:fiberapp/screenrendring.dart';
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:fiberapp/screenrendring.dart';
 
 class Tracktypes extends StatefulWidget {
   const Tracktypes({Key? key}) : super(key: key);
@@ -10,20 +10,14 @@ class Tracktypes extends StatefulWidget {
 }
 
 class _TracktypesState extends State<Tracktypes> {
-  Future<int?> onTrackTypeButtonPressed(String? num) async {
-    setState(() {});
+  Future<String?> onTrackType(String? marker) async {
+    setState(() {
+      switchscreen?.markertype = marker;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    String? selected = 'hole';
-    void val(String? marker) {
-      setState(() {
-        selected = marker;
-      });
-      print(selected);
-    }
-
     return Container(
       child: DropdownSearch<String>(
         mode: Mode.BOTTOM_SHEET,
@@ -33,8 +27,8 @@ class _TracktypesState extends State<Tracktypes> {
           "power",
         ],
         label: "Selected Icon Type",
-        onChanged: val,
-        selectedItem: selected,
+        onChanged: onTrackType,
+        selectedItem: switchscreen?.markertype,
         showSearchBox: true,
         showClearButton: true,
         searchFieldProps: TextFieldProps(
