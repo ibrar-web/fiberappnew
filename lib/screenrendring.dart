@@ -24,7 +24,7 @@ class _ScreenrendringState extends State<Screenrendring> {
   MapType currentMapType = MapType.normal;
   String? currentTrackType = '12 Core Fiber';
   int? mapnumber = 1;
-  String? markertype = "hole";
+  String? markercurrenttype = "hole";
   Location location = new Location();
   Map<PolylineId, Polyline> mapPolylines = {};
   int _polylineIdCounter = 1;

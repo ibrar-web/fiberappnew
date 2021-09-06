@@ -12,7 +12,7 @@ class Tracktypes extends StatefulWidget {
 class _TracktypesState extends State<Tracktypes> {
   Future<String?> onTrackType(String? marker) async {
     setState(() {
-      switchscreen?.markertype = marker;
+      switchscreen?.markercurrenttype = marker;
     });
   }
 
@@ -28,7 +28,7 @@ class _TracktypesState extends State<Tracktypes> {
         ],
         label: "Selected Icon Type",
         onChanged: onTrackType,
-        selectedItem: switchscreen?.markertype,
+        selectedItem: switchscreen?.markercurrenttype,
         showSearchBox: true,
         showClearButton: true,
         searchFieldProps: TextFieldProps(
