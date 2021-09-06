@@ -25,6 +25,33 @@ class _ScreenrendringState extends State<Screenrendring> {
   String? currentTrackType = '12 Core Fiber';
   int? mapnumber = 1;
   String? markercurrenttype = "hole";
+  String? currentmarker = "hole";
+  List markerlist = [
+    ['handhole1', 'handhole2', 'hanhole'],
+    [
+      'comms_pole',
+      'concrete_pole',
+      'drop_pole',
+      'fiber_reinforced_pole',
+      'joint_usage_pole',
+      'pole to pole guy',
+      'riser_pole',
+      'telephone pole',
+      'utility pole'
+    ],
+    [
+      'utility pole',
+      'joint usage with power trasnformer',
+      'non sb power supply',
+      'power pole',
+      'power trasnformer platform',
+      'power trasnformer platform',
+      'power trasnformer',
+      'sb power supply',
+      'steel pole',
+      'transmission line contact'
+    ]
+  ];
   Location location = new Location();
   Map<PolylineId, Polyline> mapPolylines = {};
   int _polylineIdCounter = 1;
