@@ -1,4 +1,5 @@
 import 'package:fiberapp/main.dart';
+import 'package:fiberapp/menu/trackdatabase.dart';
 import 'package:flutter/material.dart';
 import 'package:fiberapp/screenrendring.dart';
 
@@ -56,6 +57,14 @@ class _NavigationpageState extends State<Navigationpage> {
                   },
                   leading: Icon(Icons.track_changes),
                   title: Text('Trakcs'),
+                ),
+                ListTile(
+                  onTap: () {
+                    DatabaseHelper.instance.initDatabase();
+                    mainaccess!.statecontrol();
+                  },
+                  leading: Icon(Icons.track_changes),
+                  title: Text('DB'),
                 ),
                 Spacer(),
                 DefaultTextStyle(

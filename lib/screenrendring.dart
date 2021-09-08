@@ -1,9 +1,12 @@
+import 'dart:typed_data';
 import 'package:fiberapp/screens/homescreen.dart';
 import 'package:fiberapp/screens/tracks.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:async';
+import 'dart:ui' as ui;
 
 _ScreenrendringState? switchscreen;
 
@@ -22,12 +25,13 @@ class _ScreenrendringState extends State<Screenrendring> {
   bool startstop = false;
   Completer<GoogleMapController> controller1 = Completer();
   MapType currentMapType = MapType.normal;
-  String? currentTrackType = '12 Core Fiber';
   int? mapnumber = 1;
   String? markercurrenttype = "hole";
-  String? currentmarker = "hole";
-  List markerlist = [
-    ['handhole1', 'handhole2', 'hanhole'],
+  String? currentmarker = '';
+  List<String> markertypelist = ["hole", "pole", "power"];
+  List<String> currentmarkerslist = ['handhole1', 'handhole2', 'manhole'];
+  var markerlist = [
+    ['handhole1', 'handhole2', 'manhole'],
     [
       'comms_pole',
       'concrete_pole',
@@ -57,14 +61,34 @@ class _ScreenrendringState extends State<Screenrendring> {
   int _polylineIdCounter = 1;
   List<LatLng> linepoints = <LatLng>[];
   List? uploadtrack = [];
+  List? markerposition = [];
   Map<MarkerId, Marker> markers = {};
+  int id = 1;
+  BitmapDescriptor? myIcon;
   StreamSubscription<LocationData>? locationSubscription;
 
-  addMarker(LatLng position, String id, BitmapDescriptor descriptor) {
-    MarkerId markerId = MarkerId(id);
-    Marker marker =
-        Marker(markerId: markerId, icon: descriptor, position: position);
-    markers[markerId] = marker;
+  Future addMarker(LatLng position) async {
+    markerposition?.add({'$markercurrenttype/$currentmarker': position});
+    ByteData data = await rootBundle
+        .load('asset/images/$markercurrenttype/$currentmarker.png');
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: 80);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    final Uint8List markerIcon =
+        (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+            .buffer
+            .asUint8List();
+
+    MarkerId markerId = MarkerId(id.toString());
+    Marker marker = Marker(
+        markerId: markerId,
+        icon: BitmapDescriptor.fromBytes(markerIcon),
+        position: position);
+
+    id = id + 1;
+    setState(() {
+      markers[markerId] = marker;
+    });
   }
 
   Future<Location?> findlocation() async {
@@ -114,6 +138,8 @@ class _ScreenrendringState extends State<Screenrendring> {
       linepoints = [];
       mapPolylines = {};
       markers = {};
+      markerposition = [];
+      uploadtrack = [];
     });
   }
 
@@ -135,6 +161,12 @@ class _ScreenrendringState extends State<Screenrendring> {
       default:
         return MapHomeScreen();
     }
+  }
+
+  @override
+  void initState() {
+    currentmarker = currentmarkerslist[0];
+    super.initState();
   }
 
   @override

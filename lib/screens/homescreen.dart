@@ -1,6 +1,6 @@
 import 'package:fiberapp/menu/maptypes.dart';
-import 'package:fiberapp/menu/markers.dart';
-import 'package:fiberapp/menu/tracktypes.dart';
+import 'package:fiberapp/menu/markertypes.dart';
+import 'package:fiberapp/menu/trackdatabase.dart';
 import 'package:fiberapp/screenrendring.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,13 +22,14 @@ class MapHomeScreen extends StatefulWidget {
 }
 
 class _MapHomeScreenState extends State<MapHomeScreen> {
+  TextEditingController textcontroller = TextEditingController();
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(33.42796133580664, 73.085749655962),
     zoom: 14.4746,
   );
   Future<int?> onMapTypeButtonPressed(int? num) async {
     setState(() {
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       switch (num) {
         case 1:
           switchscreen!.currentMapType = MapType.normal;
@@ -57,7 +58,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
   Future<String?> uploaddata() async {
     var data = convert.jsonEncode(switchscreen?.uploadtrack);
     var url = Uri.https(
-        'joyndigital.com', '/Latitude1/public/api/fiber', {'data': '$data'});
+        'joyndigital.com', '/Latitude/public/api/fiber', {'data': '$data'});
 
     // Await the http get response, then decode the json-formatted response.
     var response = await http.post(url);
@@ -71,11 +72,8 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
 
   @override
   void initState() {
+    // DatabaseHelper.instance.initDatabase();
     super.initState();
-    switchscreen?.addMarker(LatLng(33.5356261, 73.1703086), "origin",
-        BitmapDescriptor.defaultMarker);
-    switchscreen?.addMarker(LatLng(33.9, 74.4), "destination",
-        BitmapDescriptor.defaultMarkerWithHue(90));
   }
 
   @override
@@ -238,9 +236,48 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                             child: Column(
                               children: <Widget>[
                                 FloatingActionButton(
-                                  onPressed: () {
-                                    setState(() {});
-                                    switchscreen?.findlocation();
+                                  onPressed: () async {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            content: Container(
+                                              height: 200,
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: EdgeInsets.all(15),
+                                                    child: TextField(
+                                                      controller:
+                                                          textcontroller,
+                                                      decoration:
+                                                          InputDecoration(
+                                                        border:
+                                                            OutlineInputBorder(),
+                                                        labelText: 'Track Name',
+                                                        hintText:
+                                                            'Enter Name Here',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  ElevatedButton(
+                                                      onPressed: () {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        DatabaseHelper.instance
+                                                            .addtrack(
+                                                                textcontroller
+                                                                    .text);
+                                                      },
+                                                      child: Text('Save'))
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        });
                                   },
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.padded,
@@ -346,14 +383,13 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                         builder: (BuildContext context, StateSetter state) {
                       return Column(children: <Widget>[
                         SizedBox(height: 20),
-                        Tracktypes(),
-                        SizedBox(height: 20),
-                        TrackMarkers()
+                        Markertypes(),
+                        SizedBox(height: 30),
                       ]);
                     });
                   });
             },
-            child: Text('Icons'))
+            child: Text('Icons')),
       ],
     );
   }
