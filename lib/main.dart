@@ -5,18 +5,22 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 
-void main() => runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    themeMode: ThemeMode.dark,
-    darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Color.fromRGBO(32, 33, 36, 1.0),
-        appBarTheme: AppBarTheme(),
-        primarySwatch: Colors.blue,
-        primaryColor: Color.fromRGBO(48, 49, 52, 1.0),
-        accentColor: Color(int.parse('0xff2399CC')),
-        iconTheme: IconThemeData(color: Colors.white)),
-    home: MainScreen()));
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: Color.fromRGBO(32, 33, 36, 1.0),
+          appBarTheme: AppBarTheme(),
+          primarySwatch: Colors.blue,
+          primaryColor: Color.fromRGBO(48, 49, 52, 1.0),
+          accentColor: Color(int.parse('0xff2399CC')),
+          iconTheme: IconThemeData(color: Colors.white)),
+      home: MainScreen()));
+}
+
 _MainScreenState? mainaccess;
 
 class MainScreen extends StatefulWidget {

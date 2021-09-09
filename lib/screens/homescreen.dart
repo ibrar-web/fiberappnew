@@ -5,9 +5,9 @@ import 'package:fiberapp/screenrendring.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
+import 'dart:async';
 
 _MapHomeScreenState? homescreenvar;
 
@@ -23,6 +23,7 @@ class MapHomeScreen extends StatefulWidget {
 
 class _MapHomeScreenState extends State<MapHomeScreen> {
   TextEditingController textcontroller = TextEditingController();
+  Completer<GoogleMapController> controller1 = Completer();
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(33.42796133580664, 73.085749655962),
     zoom: 14.4746,
@@ -72,7 +73,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
 
   @override
   void initState() {
-    // DatabaseHelper.instance.initDatabase();
     super.initState();
   }
 
@@ -98,7 +98,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 polylines: Set<Polyline>.of(switchscreen!.mapPolylines.values),
                 initialCameraPosition: _kGooglePlex,
                 onMapCreated: (GoogleMapController controller) {
-                  switchscreen?.controller1.complete(controller);
+                  controller1.complete(controller);
                 },
               ),
             ),

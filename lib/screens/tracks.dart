@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:fiberapp/menu/trackdatabase.dart';
 import 'package:fiberapp/menu/viewtrack.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 _TrackspageState? trackpage;
 
@@ -19,8 +17,17 @@ class Trackspage extends StatefulWidget {
 
 class _TrackspageState extends State<Trackspage> {
   int? selectedId;
-  Map<PolylineId, Polyline> mapPolylines = {};
-  List? uploadtrack = [];
+  final SlidableController slidableController = SlidableController();
+  Future<List<Data>> gettrack() async {
+    return DatabaseHelper.instance.gettrack();
+  }
+
+  @override
+  void initState() {
+    gettrack();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -29,7 +36,7 @@ class _TrackspageState extends State<Trackspage> {
           height: 400,
           child: Center(
             child: FutureBuilder<List<Data>>(
-                future: DatabaseHelper.instance.gettrack(),
+                future: gettrack(),
                 builder:
                     (BuildContext context, AsyncSnapshot<List<Data>> snapshot) {
                   if (!snapshot.hasData) {
@@ -40,57 +47,125 @@ class _TrackspageState extends State<Trackspage> {
                       : ListView(
                           children: snapshot.data!.map((data) {
                             return Center(
-                              child: Card(
+                                child: Slidable(
+                              controller: slidableController,
+                              actionPane: SlidableDrawerActionPane(),
+                              actionExtentRatio: 0.25,
+                              child: Container(
                                 color: selectedId == data.id
                                     ? Colors.white70
                                     : Colors.black,
                                 child: ListTile(
                                   title: Text(data.name),
-                                  onTap: () {
-                                    print('data.track');
-                                    print(data.track);
-                                    print(data.track.length);
-                                    for (var i = 0;
-                                        i < data.track.length;
-                                        i++) {
-                                      print(data.track.runtimeType);
-                                    }
-                                    setState(() {
-                                      // mapPolylines = json.decode(data.polyline);
-                                      // print(json.decode(data.polyline));
-                                      // uploadtrack = data.track;
-                                      selectedId = data.id;
-                                    });
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            content: Column(
-                                              children: [
-                                                ViewTrack(),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                Text(data.track),
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                    child: Text('Hide'))
-                                              ],
-                                            ),
-                                          );
-                                        });
-                                  },
-                                  onLongPress: () {
-                                    setState(() {
-                                      DatabaseHelper.instance.remove(data.id!);
-                                    });
-                                  },
+                                  subtitle: Text('Slide right for action'),
                                 ),
                               ),
-                            );
+                              actions: <Widget>[
+                                IconSlideAction(
+                                  caption: 'View',
+                                  color: Colors.blue,
+                                  icon: Icons.watch,
+                                  onTap: () {
+                                    {
+                                      setState(() {
+                                        selectedId = data.id;
+                                      });
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              content: Container(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    .7,
+                                                width: double.infinity,
+                                                child: Column(
+                                                  children: [
+                                                    ViewTrack(
+                                                        track: data.track,
+                                                        markerposition: data
+                                                            .markerposition),
+                                                    SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                    ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text('Hide'))
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          });
+                                    }
+                                  },
+                                ),
+                                IconSlideAction(
+                                  caption: 'Upload',
+                                  color: Colors.indigo,
+                                  icon: Icons.cloud,
+                                  onTap: () {},
+                                ),
+                                IconSlideAction(
+                                  caption: 'Delete',
+                                  color: Colors.red,
+                                  icon: Icons.delete,
+                                  onTap: () {
+                                    {
+                                      setState(() {
+                                        selectedId = data.id;
+                                      });
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              content: Container(
+                                                height: 130,
+                                                child: Column(
+                                                  children: [
+                                                    Text(
+                                                        "Are you sure you want to delete Delete"),
+                                                    SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        ElevatedButton(
+                                                            onPressed: () {
+                                                              DatabaseHelper
+                                                                  .instance
+                                                                  .removetrack(
+                                                                      data.id!);
+                                                              gettrack();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                            child:
+                                                                Text('Delete')),
+                                                        ElevatedButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                            child:
+                                                                Text('Cancel'))
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          });
+                                    }
+                                  },
+                                ),
+                              ],
+                            ));
                           }).toList(),
                         );
                 }),
@@ -100,3 +175,32 @@ class _TrackspageState extends State<Trackspage> {
     );
   }
 }
+
+class Tag {
+  String name;
+  int quantity;
+
+  Tag(this.name, this.quantity);
+
+  factory Tag.fromJson(dynamic json) {
+    return Tag(json['name'] as String, json['quantity'] as int);
+  }
+
+  @override
+  String toString() {
+    return '{ ${this.name}, ${this.quantity} }';
+  }
+}
+
+
+// Card(
+//                                 color: selectedId == data.id
+//                                     ? Colors.white70
+//                                     : Colors.black,
+//                                 child: ListTile(
+//                                   title: Text(data.name),
+//                                   onTap: () 
+//                                   },
+//                                   onLongPress: () {},
+//                                 ),
+//                               ),

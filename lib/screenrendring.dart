@@ -23,7 +23,6 @@ class Screenrendring extends StatefulWidget {
 class _ScreenrendringState extends State<Screenrendring> {
   String? screenname;
   bool startstop = false;
-  Completer<GoogleMapController> controller1 = Completer();
   MapType currentMapType = MapType.normal;
   int? mapnumber = 1;
   String? markercurrenttype = "hole";
@@ -92,7 +91,8 @@ class _ScreenrendringState extends State<Screenrendring> {
   }
 
   Future<Location?> findlocation() async {
-    final GoogleMapController controller = await controller1.future;
+    final GoogleMapController controller =
+        await homescreenvar!.controller1.future;
     locationSubscription =
         location.onLocationChanged.listen((LocationData currentLocation) {
       if (switchscreen!.startstop) {

@@ -36,8 +36,9 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
   static Database? _database;
   Future<Database> get database async => _database ??= await initDatabase();
-  Future<SharedPreferences> pref = SharedPreferences.getInstance();
+
   Future<int?> addtrack(String data) async {
+    Future<SharedPreferences> pref = SharedPreferences.getInstance();
     final SharedPreferences prefs = await pref;
     if (prefs.getString('trackslist') == null) {
       List<dynamic> trackslist = [];
@@ -72,6 +73,7 @@ class DatabaseHelper {
     List<Data> dataList = trackslist.isNotEmpty
         ? trackslist.map((c) => Data.fromMap(c)).toList()
         : [];
+    print(dataList);
     return dataList;
   }
 
@@ -100,17 +102,8 @@ class DatabaseHelper {
       ''');
   }
 
-  Future<int?> removetrack(int id) async {
-    final SharedPreferences prefs = await pref;
-    String? vol = prefs.getString('trackslist');
-    List trackslist = jsonDecode(vol!);
-    print(trackslist);
-    for (int i = 0; i < trackslist.length; i++) {
-      if (trackslist[i]['id'] == id) {
-        trackslist.removeAt(i);
-      }
-    }
-    prefs.setString('trackslist', jsonEncode(trackslist));
-    print(trackslist);
+  Future<int> remove(int id) async {
+    Database db = await instance.database;
+    return await db.delete('tracks', where: 'id = ?', whereArgs: [id]);
   }
 }
