@@ -18,13 +18,8 @@ class Trackspage extends StatefulWidget {
 class _TrackspageState extends State<Trackspage> {
   int? selectedId;
   final SlidableController slidableController = SlidableController();
-  Future<List<Data>> gettrack() async {
-    return DatabaseHelper.instance.gettrack();
-  }
-
   @override
   void initState() {
-    gettrack();
     super.initState();
   }
 
@@ -36,7 +31,7 @@ class _TrackspageState extends State<Trackspage> {
           height: 400,
           child: Center(
             child: FutureBuilder<List<Data>>(
-                future: gettrack(),
+                future: DatabaseHelper.instance.gettrack(),
                 builder:
                     (BuildContext context, AsyncSnapshot<List<Data>> snapshot) {
                   if (!snapshot.hasData) {
@@ -107,61 +102,66 @@ class _TrackspageState extends State<Trackspage> {
                                   caption: 'Upload',
                                   color: Colors.indigo,
                                   icon: Icons.cloud,
-                                  onTap: () {},
+                                  onTap: () {
+                                    setState(() {
+                                      DatabaseHelper.instance
+                                          .uploadtrack(data.id!);
+                                    });
+                                  },
                                 ),
                                 IconSlideAction(
                                   caption: 'Delete',
                                   color: Colors.red,
                                   icon: Icons.delete,
                                   onTap: () {
-                                    {
-                                      setState(() {
-                                        selectedId = data.id;
-                                      });
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              content: Container(
-                                                height: 130,
-                                                child: Column(
-                                                  children: [
-                                                    Text(
-                                                        "Are you sure you want to delete Delete"),
-                                                    SizedBox(
-                                                      height: 20,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        ElevatedButton(
-                                                            onPressed: () {
+                                    setState(() {
+                                      selectedId = data.id;
+                                    });
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            content: Container(
+                                              height: 130,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                      "Are you sure you want to delete Delete"),
+                                                  SizedBox(
+                                                    height: 20,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            setState(() {
                                                               DatabaseHelper
                                                                   .instance
                                                                   .removetrack(
                                                                       data.id!);
-                                                              gettrack();
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                            child:
-                                                                Text('Delete')),
-                                                        ElevatedButton(
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                            child:
-                                                                Text('Cancel'))
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
+                                                            });
+
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          //onPressed: null,
+                                                          child:
+                                                              Text('Delete')),
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: Text('Cancel'))
+                                                    ],
+                                                  )
+                                                ],
                                               ),
-                                            );
-                                          });
-                                    }
+                                            ),
+                                          );
+                                        });
                                   },
                                 ),
                               ],
@@ -175,32 +175,3 @@ class _TrackspageState extends State<Trackspage> {
     );
   }
 }
-
-class Tag {
-  String name;
-  int quantity;
-
-  Tag(this.name, this.quantity);
-
-  factory Tag.fromJson(dynamic json) {
-    return Tag(json['name'] as String, json['quantity'] as int);
-  }
-
-  @override
-  String toString() {
-    return '{ ${this.name}, ${this.quantity} }';
-  }
-}
-
-
-// Card(
-//                                 color: selectedId == data.id
-//                                     ? Colors.white70
-//                                     : Colors.black,
-//                                 child: ListTile(
-//                                   title: Text(data.name),
-//                                   onTap: () 
-//                                   },
-//                                   onLongPress: () {},
-//                                 ),
-//                               ),

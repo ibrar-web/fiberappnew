@@ -5,8 +5,6 @@ import 'package:fiberapp/screenrendring.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert' as convert;
 import 'dart:async';
 
 _MapHomeScreenState? homescreenvar;
@@ -54,21 +52,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
         default:
       }
     });
-  }
-
-  Future<String?> uploaddata() async {
-    var data = convert.jsonEncode(switchscreen?.uploadtrack);
-    var url = Uri.https(
-        'joyndigital.com', '/Latitude/public/api/fiber', {'data': '$data'});
-
-    // Await the http get response, then decode the json-formatted response.
-    var response = await http.post(url);
-    if (response.statusCode == 200) {
-      var jsonResponse = response.body;
-      print('Number of books about http: $jsonResponse.');
-    } else {
-      print('Request failed with status: ${response.statusCode}.');
-    }
   }
 
   @override
@@ -166,32 +149,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                                   backgroundColor: Colors.black,
                                   child: Text(
                                     'Clear',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      switchscreen!.startstop = false;
-                                    });
-
-                                    uploaddata();
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'upload',
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ),

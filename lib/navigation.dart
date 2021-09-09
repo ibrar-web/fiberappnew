@@ -38,9 +38,6 @@ class _NavigationpageState extends State<Navigationpage> {
                     color: Colors.black26,
                     shape: BoxShape.circle,
                   ),
-                  // child: Image.asset(
-                  //   'assets/images/flutter_logo.png',
-                  // ),
                 ),
                 ListTile(
                   onTap: () {

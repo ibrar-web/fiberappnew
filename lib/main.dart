@@ -1,12 +1,15 @@
 import 'package:fiberapp/navigation.dart';
 import 'package:fiberapp/screenrendring.dart';
+import 'package:fiberapp/test.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterBackgroundService.initialize(onStart);
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
@@ -18,7 +21,7 @@ void main() {
           primaryColor: Color.fromRGBO(48, 49, 52, 1.0),
           accentColor: Color(int.parse('0xff2399CC')),
           iconTheme: IconThemeData(color: Colors.white)),
-      home: MainScreen()));
+      home: Test()));
 }
 
 _MainScreenState? mainaccess;
