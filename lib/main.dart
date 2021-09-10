@@ -21,7 +21,7 @@ void main() {
           primaryColor: Color.fromRGBO(48, 49, 52, 1.0),
           accentColor: Color(int.parse('0xff2399CC')),
           iconTheme: IconThemeData(color: Colors.white)),
-      home: Test()));
+      home: MainScreen()));
 }
 
 _MainScreenState? mainaccess;

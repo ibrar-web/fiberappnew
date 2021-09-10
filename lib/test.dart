@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:location/location.dart';
+import 'package:background_location/background_location.dart';
 
 Future<void>? onStart() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,27 +23,29 @@ Future<void>? onStart() {
 
   // bring to foreground
   service.setForegroundMode(true);
-  Timer.periodic(Duration(seconds: 1), (timer) async {
+  Timer.periodic(Duration(seconds: 60), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
     service.setNotificationInfo(
       title: "My App Service",
       content: "Updated at {DateTime.now()}",
     );
-    print('location');
-    test!.findlocation();
+
+    backfetch("ss");
     service.sendData(
       {"current_date": DateTime.now().toIso8601String()},
     );
   });
 }
 
-Future<int?> findlocation() async {
-  Location location = new Location();
-  LocationData locationData;
-  // locationData = await location.getLocation();
-  print('w');
-  // locationData = await location.getLocation();
-  print(location);
+void backfetch(String arguments) async {
+  final service = FlutterBackgroundService();
+  await BackgroundLocation.startLocationService(distanceFilter: 1);
+  BackgroundLocation.getLocationUpdates((location) {
+    service.setNotificationInfo(
+      title: "FberApp",
+      content: "${location.latitude}",
+    );
+  });
 }
 
 _TestState? test;
@@ -57,14 +59,14 @@ class Test extends StatefulWidget {
 }
 
 class _TestState extends State<Test> {
-  Future<int?> findlocation() async {
-    Location location = new Location();
-    print('w');
-    // locationData = await location.getLocation();
-    print(location);
-  }
-
   String text = "Stop Service";
+  String latitude = 'waiting...';
+  String longitude = 'waiting...';
+  String altitude = 'waiting...';
+  String accuracy = 'waiting...';
+  String bearing = 'waiting...';
+  String speed = 'waiting...';
+  String time = 'waiting...';
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -122,6 +124,40 @@ class _TestState extends State<Test> {
                 setState(() {});
               },
             ),
+            locationData('Latitude: ' + latitude),
+            locationData('Longitude: ' + longitude),
+            locationData('Altitude: ' + altitude),
+            locationData('Accuracy: ' + accuracy),
+            locationData('Bearing: ' + bearing),
+            locationData('Speed: ' + speed),
+            locationData('Time: ' + time),
+            ElevatedButton(
+                onPressed: () async {
+                  BackgroundLocation.getLocationUpdates((location) {
+                    setState(() {
+                      latitude = location.latitude.toString();
+                      longitude = location.longitude.toString();
+                      accuracy = location.accuracy.toString();
+                      altitude = location.altitude.toString();
+                      bearing = location.bearing.toString();
+                      speed = location.speed.toString();
+                      time = DateTime.fromMillisecondsSinceEpoch(
+                              location.time!.toInt())
+                          .toString();
+                    });
+                  });
+                },
+                child: Text('Start Location Service')),
+            ElevatedButton(
+                onPressed: () {
+                  BackgroundLocation.stopLocationService();
+                },
+                child: Text('Stop Location Service')),
+            ElevatedButton(
+                onPressed: () {
+                  getCurrentLocation();
+                },
+                child: Text('Get Current Location')),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -134,5 +170,22 @@ class _TestState extends State<Test> {
         ),
       ),
     );
+  }
+
+  Widget locationData(String data) {
+    return Text(
+      data,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  void getCurrentLocation() {
+    BackgroundLocation().getCurrentLocation().then((location) {
+      print('This is current Location ' + location.toMap().toString());
+    });
   }
 }

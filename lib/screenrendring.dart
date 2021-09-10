@@ -4,9 +4,10 @@ import 'package:fiberapp/screens/tracks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:background_location/background_location.dart';
 
 _ScreenrendringState? switchscreen;
 
@@ -21,6 +22,7 @@ class Screenrendring extends StatefulWidget {
 }
 
 class _ScreenrendringState extends State<Screenrendring> {
+  String text = "Stop Service";
   String? screenname;
   bool startstop = false;
   MapType currentMapType = MapType.normal;
@@ -55,7 +57,7 @@ class _ScreenrendringState extends State<Screenrendring> {
       'transmission line contact'
     ]
   ];
-  Location location = new Location();
+  // Location location = new Location();
   Map<PolylineId, Polyline> mapPolylines = {};
   int _polylineIdCounter = 1;
   List<LatLng> linepoints = <LatLng>[];
@@ -64,7 +66,7 @@ class _ScreenrendringState extends State<Screenrendring> {
   Map<MarkerId, Marker> markers = {};
   int id = 1;
   BitmapDescriptor? myIcon;
-  StreamSubscription<LocationData>? locationSubscription;
+  // StreamSubscription<LocationData>? locationSubscription;
 
   Future addMarker(LatLng position) async {
     markerposition?.add({'$markercurrenttype/$currentmarker': position});
@@ -90,13 +92,51 @@ class _ScreenrendringState extends State<Screenrendring> {
     });
   }
 
+  Future<void>? onStart() {
+    WidgetsFlutterBinding.ensureInitialized();
+    final service = FlutterBackgroundService();
+    service.onDataReceived.listen((event) {
+      if (event!["action"] == "setAsForeground") {
+        service.setForegroundMode(true);
+        return;
+      }
+
+      if (event["action"] == "setAsBackground") {
+        service.setForegroundMode(false);
+      }
+
+      if (event["action"] == "stopService") {
+        service.stopBackgroundService();
+      }
+    });
+
+    // bring to foreground
+    service.setForegroundMode(true);
+    Timer.periodic(Duration(seconds: 60), (timer) async {
+      if (!(await service.isServiceRunning())) timer.cancel();
+      service.setNotificationInfo(
+        title: "My App Service",
+        content: "Updated at {DateTime.now()}",
+      );
+
+      findlocation();
+      service.sendData(
+        {"current_date": DateTime.now().toIso8601String()},
+      );
+    });
+  }
+
   Future<Location?> findlocation() async {
+    final service = FlutterBackgroundService();
+    await BackgroundLocation.startLocationService(distanceFilter: 1);
     final GoogleMapController controller =
         await homescreenvar!.controller1.future;
-    locationSubscription =
-        location.onLocationChanged.listen((LocationData currentLocation) {
+    BackgroundLocation.getLocationUpdates((currentLocation) {
       if (switchscreen!.startstop) {
-        print(linepoints);
+        service.setNotificationInfo(
+          title: "FberApp",
+          content: "${currentLocation.latitude}",
+        );
         uploadtrack?.add({
           'lat': currentLocation.latitude!,
           'lng': currentLocation.longitude!
