@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:location/location.dart';
-import 'main.dart';
 
-void onStart() {
+Future<void>? onStart() {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
   service.onDataReceived.listen((event) {
@@ -29,26 +27,43 @@ void onStart() {
     if (!(await service.isServiceRunning())) timer.cancel();
     service.setNotificationInfo(
       title: "My App Service",
-      content: "Updated at ${DateTime.now()}",
+      content: "Updated at {DateTime.now()}",
     );
-
+    print('location');
+    test!.findlocation();
     service.sendData(
       {"current_date": DateTime.now().toIso8601String()},
     );
   });
 }
 
-Future<Location?> findlocation() async {
+Future<int?> findlocation() async {
   Location location = new Location();
-  location.onLocationChanged.listen((LocationData currentLocation) {});
+  LocationData locationData;
+  // locationData = await location.getLocation();
+  print('w');
+  // locationData = await location.getLocation();
+  print(location);
 }
+
+_TestState? test;
 
 class Test extends StatefulWidget {
   @override
-  _TestState createState() => _TestState();
+  _TestState createState() {
+    test = _TestState();
+    return test!;
+  }
 }
 
 class _TestState extends State<Test> {
+  Future<int?> findlocation() async {
+    Location location = new Location();
+    print('w');
+    // locationData = await location.getLocation();
+    print(location);
+  }
+
   String text = "Stop Service";
   @override
   Widget build(BuildContext context) {

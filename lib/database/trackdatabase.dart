@@ -5,6 +5,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
 class Data {
   final int? id;
@@ -62,7 +64,6 @@ class DatabaseHelper {
       "id": id
     });
     prefs.setString('trackslist', jsonEncode(trackslist));
-    print(trackslist);
   }
 
   Future<List<Data>> gettrack() async {
@@ -70,19 +71,58 @@ class DatabaseHelper {
     final SharedPreferences prefs = await pref;
     String? vol = prefs.getString('trackslist');
     List trackslist = jsonDecode(vol!);
+    print(trackslist);
     List<Data> dataList = trackslist.isNotEmpty
         ? trackslist.map((c) => Data.fromMap(c)).toList()
         : [];
-    print(dataList);
     return dataList;
+  }
+
+  Future<int?> removetrack(int id) async {
+    Future<SharedPreferences> pref = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await pref;
+    String? vol = prefs.getString('trackslist');
+    List trackslist = jsonDecode(vol!);
+    for (int i = 0; i < trackslist.length; i++) {
+      if (trackslist[i]['id'] == id) {
+        trackslist.removeAt(i);
+      }
+    }
+    print(trackslist);
+    prefs.setString('trackslist', jsonEncode(trackslist));
+  }
+
+  Future<int?> uploadtrack(int id) async {
+    Future<SharedPreferences> pref = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await pref;
+    String? vol = prefs.getString('trackslist');
+    List trackslist = jsonDecode(vol!);
+    var data;
+    for (int i = 0; i < trackslist.length; i++) {
+      if (trackslist[i]['id'] == id) {
+        data = trackslist[i];
+        trackslist.removeAt(i);
+      }
+    }
+    if (data != null) {
+      data = convert.jsonEncode(data);
+      var url = Uri.https(
+          'joyndigital.com', '/Latitude/public/api/fiber', {'data': '$data'});
+      var response = await http.post(url);
+      if (response.statusCode == 200) {
+        prefs.setString('trackslist', jsonEncode(trackslist));
+        var jsonResponse = response.body;
+        print('Number of books about http: $jsonResponse.');
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+      }
+    }
   }
 
   Future<Database> initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'tracks.db');
     await deleteDatabase(path);
-    print(path);
-    print('path');
     return await openDatabase(
       path,
       version: 1,
@@ -100,10 +140,5 @@ class DatabaseHelper {
           mapPolylines Text
       )
       ''');
-  }
-
-  Future<int> remove(int id) async {
-    Database db = await instance.database;
-    return await db.delete('tracks', where: 'id = ?', whereArgs: [id]);
   }
 }
