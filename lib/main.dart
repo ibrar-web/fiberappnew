@@ -1,6 +1,5 @@
 import 'package:fiberapp/navigation.dart';
 import 'package:fiberapp/screenrendring.dart';
-import 'package:fiberapp/test.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';

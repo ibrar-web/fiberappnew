@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
-import 'package:flutter_background_service/flutter_background_service.dart';
 
 _MapHomeScreenState? homescreenvar;
 
@@ -67,7 +66,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
         Stack(
           children: [
             Container(
-              height: MediaQuery.of(context).size.height * .8,
+              height: MediaQuery.of(context).size.height * .6,
               width: MediaQuery.of(context).size.width,
               child: GoogleMap(
                 mapType: switchscreen!.currentMapType,
@@ -103,11 +102,17 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                                     setState(() {
                                       if (!switchscreen!.startstop) {
                                         switchscreen!.startstop = true;
-
+                                        print(
+                                            switchscreen?.locationSubscription);
                                         // locationSubscription!.resume();
                                         print(switchscreen?.startstop);
                                       } else {
                                         switchscreen!.startstop = false;
+                                        switchscreen?.locationSubscription
+                                            ?.cancel();
+                                        print('locationSubscription');
+                                        print(
+                                            switchscreen?.locationSubscription);
                                       }
                                     });
                                     switchscreen?.findlocation();
@@ -342,37 +347,6 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                   });
             },
             child: Text('Icons')),
-        ElevatedButton(
-          child: Text("Foreground Mode"),
-          onPressed: () {
-            FlutterBackgroundService().sendData({"action": "setAsForeground"});
-          },
-        ),
-        ElevatedButton(
-          child: Text("Background Mode"),
-          onPressed: () {
-            FlutterBackgroundService().sendData({"action": "setAsBackground"});
-          },
-        ),
-        ElevatedButton(
-          child: Text(switchscreen!.text),
-          onPressed: () async {
-            var isRunning = await FlutterBackgroundService().isServiceRunning();
-            if (isRunning) {
-              FlutterBackgroundService().sendData(
-                {"action": "stopService"},
-              );
-            } else {
-              FlutterBackgroundService.initialize(switchscreen!.onStart);
-            }
-            if (!isRunning) {
-              switchscreen!.text = 'Stop Service';
-            } else {
-              switchscreen!.text = 'Start Service';
-            }
-            setState(() {});
-          },
-        ),
       ],
     );
   }

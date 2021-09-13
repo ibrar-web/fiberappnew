@@ -4,12 +4,20 @@ import 'package:fiberapp/screens/tracks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:background_location/background_location.dart';
 
 _ScreenrendringState? switchscreen;
+
+void update() {
+  final service = FlutterBackgroundService();
+  service.setNotificationInfo(
+    title: "Boss",
+    content: "Updated at ${DateTime.now()}",
+  );
+}
 
 class Screenrendring extends StatefulWidget {
   const Screenrendring({Key? key}) : super(key: key);
@@ -22,7 +30,6 @@ class Screenrendring extends StatefulWidget {
 }
 
 class _ScreenrendringState extends State<Screenrendring> {
-  String text = "Stop Service";
   String? screenname;
   bool startstop = false;
   MapType currentMapType = MapType.normal;
@@ -57,7 +64,7 @@ class _ScreenrendringState extends State<Screenrendring> {
       'transmission line contact'
     ]
   ];
-  // Location location = new Location();
+  Location location = new Location();
   Map<PolylineId, Polyline> mapPolylines = {};
   int _polylineIdCounter = 1;
   List<LatLng> linepoints = <LatLng>[];
@@ -66,7 +73,7 @@ class _ScreenrendringState extends State<Screenrendring> {
   Map<MarkerId, Marker> markers = {};
   int id = 1;
   BitmapDescriptor? myIcon;
-  // StreamSubscription<LocationData>? locationSubscription;
+  StreamSubscription<LocationData>? locationSubscription;
 
   Future addMarker(LatLng position) async {
     markerposition?.add({'$markercurrenttype/$currentmarker': position});
@@ -92,51 +99,18 @@ class _ScreenrendringState extends State<Screenrendring> {
     });
   }
 
-  Future<void>? onStart() {
-    WidgetsFlutterBinding.ensureInitialized();
+  Future<int?> findlocation() async {
     final service = FlutterBackgroundService();
-    service.onDataReceived.listen((event) {
-      if (event!["action"] == "setAsForeground") {
-        service.setForegroundMode(true);
-        return;
-      }
-
-      if (event["action"] == "setAsBackground") {
-        service.setForegroundMode(false);
-      }
-
-      if (event["action"] == "stopService") {
-        service.stopBackgroundService();
-      }
-    });
-
-    // bring to foreground
-    service.setForegroundMode(true);
-    Timer.periodic(Duration(seconds: 60), (timer) async {
-      if (!(await service.isServiceRunning())) timer.cancel();
-      service.setNotificationInfo(
-        title: "My App Service",
-        content: "Updated at {DateTime.now()}",
-      );
-
-      findlocation();
-      service.sendData(
-        {"current_date": DateTime.now().toIso8601String()},
-      );
-    });
-  }
-
-  Future<Location?> findlocation() async {
-    final service = FlutterBackgroundService();
-    await BackgroundLocation.startLocationService(distanceFilter: 1);
+    service.setNotificationInfo(
+      title: "My App Service",
+      content: "Updated at Boss",
+    );
+    print(" Calling function ");
     final GoogleMapController controller =
         await homescreenvar!.controller1.future;
-    BackgroundLocation.getLocationUpdates((currentLocation) {
+    location.onLocationChanged.listen((LocationData currentLocation) {
       if (switchscreen!.startstop) {
-        service.setNotificationInfo(
-          title: "FberApp",
-          content: "${currentLocation.latitude}",
-        );
+        print(linepoints);
         uploadtrack?.add({
           'lat': currentLocation.latitude!,
           'lng': currentLocation.longitude!
@@ -209,6 +183,7 @@ class _ScreenrendringState extends State<Screenrendring> {
     super.initState();
   }
 
+  String text = "Stop Service";
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -217,9 +192,70 @@ class _ScreenrendringState extends State<Screenrendring> {
         children: [
           Container(
             child: screensfunction(screenname),
-          )
+          ),
+          ElevatedButton(
+            child: Text("Foreground Mode"),
+            onPressed: () {
+              FlutterBackgroundService()
+                  .sendData({"action": "setAsForeground"});
+            },
+          ),
+          ElevatedButton(
+            child: Text("Background Mode"),
+            onPressed: () {
+              FlutterBackgroundService()
+                  .sendData({"action": "setAsBackground"});
+            },
+          ),
+          ElevatedButton(
+            child: Text(text),
+            onPressed: () async {
+              var isRunning =
+                  await FlutterBackgroundService().isServiceRunning();
+              if (isRunning) {
+                FlutterBackgroundService().sendData(
+                  {"action": "stopService"},
+                );
+              } else {
+                FlutterBackgroundService.initialize(onStart);
+              }
+              if (!isRunning) {
+                text = 'Stop Service';
+              } else {
+                text = 'Start Service';
+              }
+              setState(() {});
+            },
+          ),
         ],
       ),
     );
   }
+}
+
+void onStart() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final service = FlutterBackgroundService();
+  service.onDataReceived.listen((event) {
+    if (event!["action"] == "setAsForeground") {
+      service.setForegroundMode(true);
+      return;
+    }
+
+    if (event["action"] == "setAsBackground") {
+      service.setForegroundMode(false);
+    }
+
+    if (event["action"] == "stopService") {
+      service.stopBackgroundService();
+    }
+  });
+
+  // bring to foreground
+  service.setForegroundMode(true);
+  Timer.periodic(Duration(seconds: 1), (timer) async {
+    if (!(await service.isServiceRunning())) timer.cancel();
+    switchscreen!.findlocation();
+    update();
+  });
 }
