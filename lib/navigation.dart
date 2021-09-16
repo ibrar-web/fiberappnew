@@ -57,11 +57,11 @@ class _NavigationpageState extends State<Navigationpage> {
                 ),
                 ListTile(
                   onTap: () {
-                    DatabaseHelper.instance.initDatabase();
+                    switchscreen!.screensfunction('Device');
                     mainaccess!.statecontrol();
                   },
                   leading: Icon(Icons.track_changes),
-                  title: Text('DB'),
+                  title: Text('Device'),
                 ),
                 Spacer(),
                 DefaultTextStyle(

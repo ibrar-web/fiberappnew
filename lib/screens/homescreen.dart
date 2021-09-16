@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import 'package:background_location/background_location.dart';
 
 _MapHomeScreenState? homescreenvar;
 
@@ -66,7 +67,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
         Stack(
           children: [
             Container(
-              height: MediaQuery.of(context).size.height * .6,
+              height: MediaQuery.of(context).size.height * .8,
               width: MediaQuery.of(context).size.width,
               child: GoogleMap(
                 mapType: switchscreen!.currentMapType,
@@ -85,247 +86,196 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                 },
               ),
             ),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(40, 20, 20, 0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      if (!switchscreen!.startstop) {
-                                        switchscreen!.startstop = true;
-                                        print(
-                                            switchscreen?.locationSubscription);
-                                        // locationSubscription!.resume();
-                                        print(switchscreen?.startstop);
-                                      } else {
-                                        switchscreen!.startstop = false;
-                                        switchscreen?.locationSubscription
-                                            ?.cancel();
-                                        print('locationSubscription');
-                                        print(
-                                            switchscreen?.locationSubscription);
-                                      }
-                                    });
-                                    switchscreen?.findlocation();
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor:
-                                      switchscreen!.startstop == true
-                                          ? Colors.green
-                                          : Colors.black,
-                                  child: Text(
-                                    switchscreen!.startstop == true
-                                        ? 'Stop'
-                                        : 'Start',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    switchscreen?.clearmap();
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'Clear',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.topRight,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Maptypes();
-                                        });
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'Map',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+            Column(
+              children: [
+                SizedBox(
+                  height: 55,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        if (!switchscreen!.startstop) {
+                          setState(() {
+                            switchscreen!.startstop = true;
+                          });
+                          await BackgroundLocation.startLocationService(
+                              distanceFilter: 5);
+                          print(switchscreen?.startstop);
+                        } else {
+                          setState(() {
+                            switchscreen!.startstop = false;
+                          });
+
+                          await BackgroundLocation.stopLocationService();
+                        }
+
+                        switchscreen?.findlocation();
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: switchscreen!.startstop == true
+                          ? Colors.green
+                          : Colors.black,
+                      child: Text(
+                        switchscreen!.startstop == true ? 'Stop' : 'Start',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () async {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            content: Container(
-                                              height: 200,
-                                              child: Column(
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.all(15),
-                                                    child: TextField(
-                                                      controller:
-                                                          textcontroller,
-                                                      decoration:
-                                                          InputDecoration(
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                        labelText: 'Track Name',
-                                                        hintText:
-                                                            'Enter Name Here',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  ElevatedButton(
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        DatabaseHelper.instance
-                                                            .addtrack(
-                                                                textcontroller
-                                                                    .text);
-                                                      },
-                                                      child: Text('Save'))
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        });
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'Save',
-                                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        switchscreen?.clearmap();
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Maptypes();
+                            });
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        'Map',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: Container(
+                                  height: 200,
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.all(15),
+                                        child: TextField(
+                                          controller: textcontroller,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Track Name',
+                                            hintText: 'Enter Name Here',
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            DatabaseHelper.instance
+                                                .addtrack(textcontroller.text);
+                                          },
+                                          child: Text('Save'))
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {},
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'Pic',
-                                    style: TextStyle(color: Colors.white),
+                              );
+                            });
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        'Save',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () {},
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        'Pic',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                scrollable: true,
+                                title: Text('Login'),
+                                content: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Form(
+                                    child: Column(
+                                      children: <Widget>[
+                                        TextFormField(
+                                          decoration: InputDecoration(
+                                            labelText: 'Name',
+                                            icon: Icon(Icons.account_box),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Column(
-                              children: <Widget>[
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: Text('Login'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Form(
-                                                child: Column(
-                                                  children: <Widget>[
-                                                    TextFormField(
-                                                      decoration:
-                                                          InputDecoration(
-                                                        labelText: 'Name',
-                                                        icon: Icon(
-                                                            Icons.account_box),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            actions: [
-                                              RaisedButton(
-                                                  child: Text("Submit"),
-                                                  onPressed: () {
-                                                    // your code
-                                                  })
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.padded,
-                                  backgroundColor: Colors.black,
-                                  child: Text(
-                                    'Video',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                )),
+                                actions: [
+                                  RaisedButton(
+                                      child: Text("Submit"),
+                                      onPressed: () {
+                                        // your code
+                                      })
+                                ],
+                              );
+                            });
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        'Video',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
           ],
         ),
         ElevatedButton(
@@ -338,11 +288,12 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                   builder: (BuildContext context) {
                     return StatefulBuilder(
                         builder: (BuildContext context, StateSetter state) {
-                      return Column(children: <Widget>[
-                        SizedBox(height: 20),
-                        Markertypes(),
-                        SizedBox(height: 30),
-                      ]);
+                      return Container(
+                        height: 210,
+                        child: SingleChildScrollView(
+                          child: Markertypes(),
+                        ),
+                      );
                     });
                   });
             },

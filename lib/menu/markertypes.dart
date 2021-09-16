@@ -39,6 +39,9 @@ class _MarkertypesState extends State<Markertypes> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
+        SizedBox(
+          height: 15,
+        ),
         DropdownSearch<String>(
           mode: Mode.BOTTOM_SHEET,
           items: switchscreen!.markertypelist,
@@ -55,40 +58,7 @@ class _MarkertypesState extends State<Markertypes> {
             ),
           ),
           popupTitle: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColorDark,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-          ),
-          popupShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-          ),
-        ),
-        SizedBox(height: 30),
-        DropdownSearch<String>(
-          mode: Mode.BOTTOM_SHEET,
-          items: switchscreen?.currentmarkerslist,
-          label: "Selected Marker",
-          onChanged: selectmarker,
-          selectedItem: switchscreen!.currentmarker,
-          showSearchBox: true,
-          showClearButton: true,
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.fromLTRB(12, 12, 8, 0),
-              labelText: "Search Icon",
-            ),
-          ),
-          popupTitle: Container(
-            height: 50,
+            height: 20,
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColorDark,
               borderRadius: BorderRadius.only(
@@ -105,18 +75,57 @@ class _MarkertypesState extends State<Markertypes> {
           ),
         ),
         SizedBox(height: 10),
-        InkWell(
-          child: Image(
-            image: AssetImage(
-                'asset/images/${switchscreen?.markercurrenttype}/${switchscreen!.currentmarker}.png'),
-            height: 80,
-            width: 80,
+        DropdownSearch<String>(
+          mode: Mode.BOTTOM_SHEET,
+          items: switchscreen?.currentmarkerslist,
+          label: "Selected Marker",
+          onChanged: selectmarker,
+          selectedItem: switchscreen!.currentmarker,
+          showSearchBox: true,
+          showClearButton: true,
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.fromLTRB(12, 12, 8, 0),
+              labelText: "Search Icon",
+            ),
           ),
-          onTap: () async {
-            var locationData = await location.getLocation();
-            switchscreen?.addMarker(
-                LatLng(locationData.latitude!, locationData.longitude!));
-          },
+          popupTitle: Container(
+            height: 20,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColorDark,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+          ),
+          popupShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+        ),
+        SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            InkWell(
+              child: Image(
+                image: AssetImage(
+                    'asset/images/${switchscreen?.markercurrenttype}/${switchscreen!.currentmarker}.png'),
+                height: 50,
+                width: 70,
+              ),
+              onTap: () async {
+                var locationData = await location.getLocation();
+                switchscreen?.addMarker(
+                    LatLng(locationData.latitude!, locationData.longitude!));
+              },
+            ),
+            IconButton(onPressed: null, icon: Icon(Icons.settings, size: 25.0))
+          ],
         )
       ],
     );

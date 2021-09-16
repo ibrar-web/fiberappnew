@@ -1,191 +1,162 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:background_location/background_location.dart';
-
-Future<void>? onStart() {
-  WidgetsFlutterBinding.ensureInitialized();
-  final service = FlutterBackgroundService();
-  service.onDataReceived.listen((event) {
-    if (event!["action"] == "setAsForeground") {
-      service.setForegroundMode(true);
-      return;
-    }
-
-    if (event["action"] == "setAsBackground") {
-      service.setForegroundMode(false);
-    }
-
-    if (event["action"] == "stopService") {
-      service.stopBackgroundService();
-    }
-  });
-
-  // bring to foreground
-  service.setForegroundMode(true);
-  Timer.periodic(Duration(seconds: 60), (timer) async {
-    if (!(await service.isServiceRunning())) timer.cancel();
-    service.setNotificationInfo(
-      title: "My App Service",
-      content: "Updated at {DateTime.now()}",
-    );
-
-    backfetch("ss");
-    service.sendData(
-      {"current_date": DateTime.now().toIso8601String()},
-    );
-  });
-}
-
-void backfetch(String arguments) async {
-  final service = FlutterBackgroundService();
-  await BackgroundLocation.startLocationService(distanceFilter: 1);
-  BackgroundLocation.getLocationUpdates((location) {
-    service.setNotificationInfo(
-      title: "FberApp",
-      content: "${location.latitude}",
-    );
-  });
-}
-
-_TestState? test;
+import 'package:sensors_plus/sensors_plus.dart';
 
 class Test extends StatefulWidget {
+  Test({Key? key, this.title}) : super(key: key);
+
+  final String? title;
+
   @override
-  _TestState createState() {
-    test = _TestState();
-    return test!;
-  }
+  _TestState createState() => _TestState();
 }
 
 class _TestState extends State<Test> {
-  String text = "Stop Service";
-  String latitude = 'waiting...';
-  String longitude = 'waiting...';
-  String altitude = 'waiting...';
-  String accuracy = 'waiting...';
-  String bearing = 'waiting...';
-  String speed = 'waiting...';
-  String time = 'waiting...';
+  static const int _snakeRows = 20;
+  static const int _snakeColumns = 20;
+  static const double _snakeCellSize = 10.0;
+
+  List<double>? _accelerometerValues;
+  List<double>? _userAccelerometerValues;
+  List<double>? _gyroscopeValues;
+  List<double>? _magnetometerValues;
+  Future<String?> device() async {
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      print(event);
+    });
+// [AccelerometerEvent (x: 0.0, y: 9.8, z: 0.0)]
+
+    userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+      print(event);
+    });
+// [UserAccelerometerEvent (x: 0.0, y: 0.0, z: 0.0)]
+
+    gyroscopeEvents.listen((GyroscopeEvent event) {
+      print(event);
+    });
+// [GyroscopeEvent (x: 0.0, y: 0.0, z: 0.0)]
+
+    magnetometerEvents.listen((MagnetometerEvent event) {
+      print(event);
+    });
+// [MagnetometerEvent (x: -23.6, y: 6.2, z: -34.9)]
+  }
+
+  final _streamSubscriptions = <StreamSubscription<dynamic>>[];
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Service App'),
-        ),
-        body: Column(
-          children: [
-            StreamBuilder<Map<String, dynamic>?>(
-              stream: FlutterBackgroundService().onDataReceived,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+    final accelerometer =
+        _accelerometerValues?.map((double v) => v.toStringAsFixed(1)).toList();
+    final gyroscope =
+        _gyroscopeValues?.map((double v) => v.toStringAsFixed(1)).toList();
+    final userAccelerometer = _userAccelerometerValues
+        ?.map((double v) => v.toStringAsFixed(1))
+        .toList();
+    final magnetometer =
+        _magnetometerValues?.map((double v) => v.toStringAsFixed(1)).toList();
 
-                final data = snapshot.data!;
-                DateTime? date = DateTime.tryParse(data["current_date"]);
-                return Text(date.toString());
-              },
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(width: 1.0, color: Colors.black38),
             ),
-            ElevatedButton(
-              child: Text("Foreground Mode"),
-              onPressed: () {
-                FlutterBackgroundService()
-                    .sendData({"action": "setAsForeground"});
-              },
+            child: SizedBox(
+              height: _snakeRows * _snakeCellSize,
+              width: _snakeColumns * _snakeCellSize,
             ),
-            ElevatedButton(
-              child: Text("Background Mode"),
-              onPressed: () {
-                FlutterBackgroundService()
-                    .sendData({"action": "setAsBackground"});
-              },
-            ),
-            ElevatedButton(
-              child: Text(text),
-              onPressed: () async {
-                var isRunning =
-                    await FlutterBackgroundService().isServiceRunning();
-                if (isRunning) {
-                  FlutterBackgroundService().sendData(
-                    {"action": "stopService"},
-                  );
-                } else {
-                  FlutterBackgroundService.initialize(onStart);
-                }
-                if (!isRunning) {
-                  text = 'Stop Service';
-                } else {
-                  text = 'Start Service';
-                }
-                setState(() {});
-              },
-            ),
-            locationData('Latitude: ' + latitude),
-            locationData('Longitude: ' + longitude),
-            locationData('Altitude: ' + altitude),
-            locationData('Accuracy: ' + accuracy),
-            locationData('Bearing: ' + bearing),
-            locationData('Speed: ' + speed),
-            locationData('Time: ' + time),
-            ElevatedButton(
-                onPressed: () async {
-                  BackgroundLocation.getLocationUpdates((location) {
-                    setState(() {
-                      latitude = location.latitude.toString();
-                      longitude = location.longitude.toString();
-                      accuracy = location.accuracy.toString();
-                      altitude = location.altitude.toString();
-                      bearing = location.bearing.toString();
-                      speed = location.speed.toString();
-                      time = DateTime.fromMillisecondsSinceEpoch(
-                              location.time!.toInt())
-                          .toString();
-                    });
-                  });
-                },
-                child: Text('Start Location Service')),
-            ElevatedButton(
-                onPressed: () {
-                  BackgroundLocation.stopLocationService();
-                },
-                child: Text('Stop Location Service')),
-            ElevatedButton(
-                onPressed: () {
-                  getCurrentLocation();
-                },
-                child: Text('Get Current Location')),
-          ],
+          ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            FlutterBackgroundService().sendData({
-              "hello": "world",
-            });
-          },
-          child: Icon(Icons.play_arrow),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('Accelerometer: $accelerometer'),
+            ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('UserAccelerometer: $userAccelerometer'),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('Gyroscope: $gyroscope'),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text('Magnetometer: $magnetometer'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget locationData(String data) {
-    return Text(
-      data,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 18,
-      ),
-      textAlign: TextAlign.center,
-    );
+  @override
+  void dispose() {
+    super.dispose();
+    for (final subscription in _streamSubscriptions) {
+      subscription.cancel();
+    }
   }
 
-  void getCurrentLocation() {
-    BackgroundLocation().getCurrentLocation().then((location) {
-      print('This is current Location ' + location.toMap().toString());
-    });
+  @override
+  void initState() {
+    super.initState();
+    device();
+    _streamSubscriptions.add(
+      accelerometerEvents.listen(
+        (AccelerometerEvent event) {
+          setState(() {
+            _accelerometerValues = <double>[event.x, event.y, event.z];
+          });
+        },
+      ),
+    );
+    _streamSubscriptions.add(
+      gyroscopeEvents.listen(
+        (GyroscopeEvent event) {
+          setState(() {
+            _gyroscopeValues = <double>[event.x, event.y, event.z];
+          });
+        },
+      ),
+    );
+    _streamSubscriptions.add(
+      userAccelerometerEvents.listen(
+        (UserAccelerometerEvent event) {
+          setState(() {
+            _userAccelerometerValues = <double>[event.x, event.y, event.z];
+          });
+        },
+      ),
+    );
+    _streamSubscriptions.add(
+      magnetometerEvents.listen(
+        (MagnetometerEvent event) {
+          setState(() {
+            _magnetometerValues = <double>[event.x, event.y, event.z];
+          });
+        },
+      ),
+    );
   }
 }
