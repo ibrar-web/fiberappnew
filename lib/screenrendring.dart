@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:fiberapp/screens/homescreen.dart';
+import 'package:fiberapp/screens/setting.dart';
 import 'package:fiberapp/screens/tracks.dart';
-import 'package:fiberapp/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,12 +9,9 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:background_location/background_location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 _ScreenrendringState? switchscreen;
-
-void update() {
-  final service = FlutterBackgroundService();
-}
 
 class Screenrendring extends StatefulWidget {
   const Screenrendring({Key? key}) : super(key: key);
@@ -27,26 +24,37 @@ class Screenrendring extends StatefulWidget {
 }
 
 class _ScreenrendringState extends State<Screenrendring> {
+  TextEditingController icondetails = TextEditingController(text: '');
+  TextEditingController markercontroltime = TextEditingController(text: '');
+  //use for setting time interval for adding marker
+  int? time;
+  //use for check how to add marker
+  int? markercontrol;
   String? screenname;
   bool startstop = false;
   MapType currentMapType = MapType.normal;
   int? mapnumber = 1;
-  String? markercurrenttype = "hole";
+  String? markercurrenttype = "fiber";
   String? currentmarker = '';
-  List<String> markertypelist = ["hole", "pole", "power"];
+  List<String> markertypelist = ["fiber", "power"];
   List<String> currentmarkerslist = [];
   var markerlist = [
-    ['handhole1', 'handhole2', 'manhole'],
     [
       'comms_pole',
       'concrete_pole',
       'drop_pole',
-      'fiber_reinforced_pole',
+      'fdh',
+      'fiber_interconnect',
       'joint_usage_pole',
       'pole to pole guy',
       'riser_pole',
       'telephone pole',
-      'utility pole'
+      'utility pole',
+      'handhole1',
+      'manhole',
+      'trafficcabinet',
+      'optical cross connect',
+      'optical repeater',
     ],
     [
       'utility pole',
@@ -54,14 +62,19 @@ class _ScreenrendringState extends State<Screenrendring> {
       'non sb power supply',
       'power pole',
       'power trasnformer platform',
-      'power trasnformer platform',
       'power trasnformer',
       'sb power supply',
       'steel pole',
-      'transmission line contact'
+      'transmission line contact',
+      'handhole1',
+      'manhole',
+      'ac power inserter',
+      'centralized power supply',
+      'comms_pole',
+      'concrete_pole',
+      'drop_pole',
     ]
   ];
-  // Location location = new Location();
   Map<PolylineId, Polyline> mapPolylines = {};
   int _polylineIdCounter = 1;
   List<LatLng> linepoints = <LatLng>[];
@@ -70,7 +83,6 @@ class _ScreenrendringState extends State<Screenrendring> {
   Map<MarkerId, Marker> markers = {};
   int id = 1;
   BitmapDescriptor? myIcon;
-
   Future addMarker(LatLng position) async {
     markerposition?.add({'$markercurrenttype/$currentmarker': position});
     ByteData data = await rootBundle
@@ -82,17 +94,26 @@ class _ScreenrendringState extends State<Screenrendring> {
         (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
             .buffer
             .asUint8List();
-
     MarkerId markerId = MarkerId(id.toString());
     Marker marker = Marker(
         markerId: markerId,
+        infoWindow: InfoWindow(
+          title: icondetails.text,
+        ),
+        onTap: () {
+          print('markerId asdasdasdasdasdasdasdasdas');
+          print(markerId);
+        },
         icon: BitmapDescriptor.fromBytes(markerIcon),
         position: position);
 
     id = id + 1;
     setState(() {
+      icondetails = TextEditingController(text: '');
       markers[markerId] = marker;
     });
+    GoogleMapController? controller;
+    controller!.showMarkerInfoWindow(MarkerId('ID_MARKET'));
   }
 
   Future<int?> findlocation() async {
@@ -102,12 +123,13 @@ class _ScreenrendringState extends State<Screenrendring> {
       final service = FlutterBackgroundService();
       if (startstop) {
         service.setForegroundMode(true);
-        if (!await (service.isServiceRunning())) {
+        if (await (service.isServiceRunning())) {
           service.setNotificationInfo(
             title: "My App Service",
             content: "Updated at ",
           );
         }
+
         setState(() {
           uploadtrack?.add({
             'lat': currentLocation.latitude!,
@@ -156,6 +178,16 @@ class _ScreenrendringState extends State<Screenrendring> {
     });
   }
 
+  Future<int?> getvalues() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var num = prefs.getInt('markercontrol');
+    var tim = prefs.getInt('markercontrolinterval');
+    setState(() {
+      markercontrol = num;
+      markercontroltime = TextEditingController(text: tim.toString());
+    });
+  }
+
   Widget? screensfunction(String? name) {
     setState(() {
       screenname = name;
@@ -171,9 +203,9 @@ class _ScreenrendringState extends State<Screenrendring> {
         return Trackspage();
         // ignore: dead_code
         break;
-      case 'Device':
+      case 'setting':
         print('track');
-        return Test();
+        return Setting();
         // ignore: dead_code
         break;
       default:
@@ -185,6 +217,7 @@ class _ScreenrendringState extends State<Screenrendring> {
   void initState() {
     currentmarkerslist = markerlist[0];
     currentmarker = currentmarkerslist[0];
+    getvalues();
     super.initState();
   }
 

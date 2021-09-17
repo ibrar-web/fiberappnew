@@ -149,10 +149,24 @@ class _MainScreenState extends State<MainScreen>
         borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: _connectionStatus != ConnectivityResult.none
+                ? Color(0xFF000080)
+                : Color(0xFFde3a19),
             // ignore: unrelated_type_equality_checks
-            title: Text(_connectionStatus != ConnectivityResult.none
-                ? 'JoynDigital'
-                : 'Please internet'),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Image.asset(
+                  'asset/images/logo.png',
+                  fit: BoxFit.contain,
+                  height: 25,
+                ),
+                Text('Fiber Survey'),
+                Text(_connectionStatus != ConnectivityResult.none
+                    ? 'Online'
+                    : 'Offline'),
+              ],
+            ),
             leading: IconButton(
                 icon: AnimatedIcon(
                   icon: AnimatedIcons.menu_close,
@@ -160,6 +174,10 @@ class _MainScreenState extends State<MainScreen>
                 ),
                 onPressed: () {
                   statecontrol();
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus) {
+                    currentFocus.unfocus();
+                  }
                 }),
           ),
           body: SingleChildScrollView(

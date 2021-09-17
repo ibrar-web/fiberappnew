@@ -1,5 +1,4 @@
 import 'package:fiberapp/main.dart';
-import 'package:fiberapp/database/trackdatabase.dart';
 import 'package:flutter/material.dart';
 import 'package:fiberapp/screenrendring.dart';
 
@@ -57,11 +56,11 @@ class _NavigationpageState extends State<Navigationpage> {
                 ),
                 ListTile(
                   onTap: () {
-                    switchscreen!.screensfunction('Device');
+                    switchscreen!.screensfunction('setting');
                     mainaccess!.statecontrol();
                   },
                   leading: Icon(Icons.track_changes),
-                  title: Text('Device'),
+                  title: Text('Setting'),
                 ),
                 Spacer(),
                 DefaultTextStyle(

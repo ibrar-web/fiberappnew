@@ -119,12 +119,35 @@ class _MarkertypesState extends State<Markertypes> {
                 width: 70,
               ),
               onTap: () async {
+                switchscreen!.startstop = false;
                 var locationData = await location.getLocation();
-                switchscreen?.addMarker(
-                    LatLng(locationData.latitude!, locationData.longitude!));
+                showDialog(
+                  context: context,
+                  builder: (context) => new AlertDialog(
+                    actions: <Widget>[
+                      Column(
+                        children: [
+                          TextField(
+                            controller: switchscreen?.icondetails,
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: 'Enter Icon Details'),
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                switchscreen?.addMarker(LatLng(
+                                    locationData.latitude!,
+                                    locationData.longitude!));
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Start'))
+                        ],
+                      )
+                    ],
+                  ),
+                );
               },
             ),
-            IconButton(onPressed: null, icon: Icon(Icons.settings, size: 25.0))
           ],
         )
       ],

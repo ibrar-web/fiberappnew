@@ -74,12 +74,11 @@ class _MaptypesState extends State<Maptypes> {
         ),
       ),
       actions: <Widget>[
-        // usually buttons at the bottom of the dialog
-        new FlatButton(
-          child: new Text("Close"),
+        ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
+          child: new Text("Close"),
         ),
       ],
     );
