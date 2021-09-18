@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fiberapp/screenrendring.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 
-class Markertypes extends StatefulWidget {
-  const Markertypes({Key? key}) : super(key: key);
+class UpdateMarker extends StatefulWidget {
+  final LatLng? markerposition;
+  const UpdateMarker({Key? key, this.markerposition}) : super(key: key);
 
   @override
-  _MarkertypesState createState() => _MarkertypesState();
+  _UpdateMarkerState createState() => _UpdateMarkerState(markerposition);
 }
 
-class _MarkertypesState extends State<Markertypes> {
-  Location location = new Location();
+class _UpdateMarkerState extends State<UpdateMarker> {
+  _UpdateMarkerState(this.markerposition);
+  LatLng? markerposition;
   void selectmarker(String? marker) {
     setState(() {
       switchscreen!.currentmarker = marker;
@@ -120,7 +121,6 @@ class _MarkertypesState extends State<Markertypes> {
               ),
               onTap: () async {
                 switchscreen!.startstop = false;
-                var locationData = await location.getLocation();
                 showDialog(
                   context: context,
                   builder: (context) => new AlertDialog(
@@ -136,8 +136,8 @@ class _MarkertypesState extends State<Markertypes> {
                           ElevatedButton(
                               onPressed: () {
                                 switchscreen?.addMarker(
-                                    LatLng(locationData.latitude!,
-                                        locationData.longitude!),
+                                    LatLng(markerposition!.latitude,
+                                        markerposition!.longitude),
                                     switchscreen?.icondetails.text,
                                     switchscreen!.id);
                                 Navigator.of(context).pop();

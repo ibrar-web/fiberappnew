@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:fiberapp/menu/updatemarker.dart';
 import 'package:fiberapp/screens/homescreen.dart';
 import 'package:fiberapp/screens/setting.dart';
 import 'package:fiberapp/screens/tracks.dart';
@@ -81,10 +82,11 @@ class _ScreenrendringState extends State<Screenrendring> {
   List? uploadtrack = [];
   List? markerposition = [];
   Map<MarkerId, Marker> markers = {};
-  int id = 1;
+  int id = 0;
   BitmapDescriptor? myIcon;
-  Future addMarker(LatLng position) async {
-    markerposition?.add({'$markercurrenttype/$currentmarker': position});
+  Future addMarker(LatLng position, String? detail, int positionid) async {
+    markerposition
+        ?.add({'$markercurrenttype/$currentmarker': position, 'id': id});
     ByteData data = await rootBundle
         .load('asset/images/$markercurrenttype/$currentmarker.png');
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
@@ -97,12 +99,8 @@ class _ScreenrendringState extends State<Screenrendring> {
     MarkerId markerId = MarkerId(id.toString());
     Marker marker = Marker(
         markerId: markerId,
-        infoWindow: InfoWindow(
-          title: icondetails.text,
-        ),
         onTap: () {
-          print('markerId asdasdasdasdasdasdasdasdas');
-          print(markerId);
+          onMarkerTapped(markerId, detail, positionid, position);
         },
         icon: BitmapDescriptor.fromBytes(markerIcon),
         position: position);
@@ -112,8 +110,60 @@ class _ScreenrendringState extends State<Screenrendring> {
       icondetails = TextEditingController(text: '');
       markers[markerId] = marker;
     });
-    GoogleMapController? controller;
-    controller!.showMarkerInfoWindow(MarkerId('ID_MARKET'));
+  }
+
+  void onMarkerTapped(
+      MarkerId markerId, String? detail, int id, LatLng position) async {
+    print(markerposition);
+    print(markerposition!.length);
+    print(id);
+    showGeneralDialog(
+      barrierLabel: "Barrier",
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: Duration(milliseconds: 500),
+      context: context,
+      pageBuilder: (_, __, ___) {
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            height: 400,
+            margin: EdgeInsets.only(bottom: 50, left: 20, right: 20),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: SizedBox.expand(
+              child: Column(
+                children: [
+                  Text(detail.toString()),
+                  ElevatedButton(
+                      onPressed: () {
+                        markerposition!.removeAt(id);
+                        setState(() => markers.remove(markerId));
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Delete')),
+                  ElevatedButton(
+                      onPressed: () {
+                        markerposition!.removeAt(id);
+                        setState(() => markers.remove(markerId));
+                      },
+                      child: Text('Update')),
+                  UpdateMarker(markerposition: position),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (_, anim, __, child) {
+        return SlideTransition(
+          position: Tween(begin: Offset(0, 1), end: Offset(0, 0)).animate(anim),
+          child: child,
+        );
+      },
+    );
   }
 
   Future<int?> findlocation() async {
