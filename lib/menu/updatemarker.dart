@@ -5,15 +5,21 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class UpdateMarker extends StatefulWidget {
   final LatLng? markerposition;
-  const UpdateMarker({Key? key, this.markerposition}) : super(key: key);
+  final int? id;
+  final MarkerId? markerid;
+  const UpdateMarker({Key? key, this.markerposition, this.id, this.markerid})
+      : super(key: key);
 
   @override
-  _UpdateMarkerState createState() => _UpdateMarkerState(markerposition);
+  _UpdateMarkerState createState() =>
+      _UpdateMarkerState(markerposition, id, markerid);
 }
 
 class _UpdateMarkerState extends State<UpdateMarker> {
-  _UpdateMarkerState(this.markerposition);
+  _UpdateMarkerState(this.markerposition, this.id, this.markerid);
   LatLng? markerposition;
+  int? id;
+  MarkerId? markerid;
   void selectmarker(String? marker) {
     setState(() {
       switchscreen!.currentmarker = marker;
@@ -142,8 +148,19 @@ class _UpdateMarkerState extends State<UpdateMarker> {
                                     switchscreen!.id);
                                 Navigator.of(context).pop();
                                 switchscreen!.startstop = true;
+                                Navigator.of(context).pop();
+                                for (int i = 0;
+                                    i < switchscreen!.markerposition!.length;
+                                    i++) {
+                                  if (switchscreen!.markerposition![i]['id'] ==
+                                      id) {
+                                    switchscreen!.markerposition!.removeAt(i);
+                                  }
+                                }
+                                setState(() =>
+                                    switchscreen!.markers.remove(markerid));
                               },
-                              child: Text('Start'))
+                              child: Text('Update'))
                         ],
                       )
                     ],

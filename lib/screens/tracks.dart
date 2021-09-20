@@ -51,7 +51,8 @@ class _TrackspageState extends State<Trackspage> {
                                     ? Colors.white70
                                     : Colors.black,
                                 child: ListTile(
-                                  title: Text(data.name),
+                                  title: Text(
+                                      '${data.name}  Track time: ${data.time}'),
                                   subtitle: Text('Slide right for action'),
                                 ),
                               ),

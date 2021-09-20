@@ -63,8 +63,11 @@ class _ScreenrendringState extends State<Screenrendring> {
   int id = 0;
   BitmapDescriptor? myIcon;
   Future addMarker(LatLng position, String? detail, int positionid) async {
-    markerposition
-        ?.add({'$markercurrenttype/$currentmarker': position, 'id': id});
+    markerposition?.add({
+      '$markercurrenttype/$currentmarker': position,
+      'id': id,
+      "detail": detail
+    });
     ByteData data = await rootBundle
         .load('asset/images/$markercurrenttype/$currentmarker.png');
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
@@ -78,7 +81,7 @@ class _ScreenrendringState extends State<Screenrendring> {
     Marker marker = Marker(
         markerId: markerId,
         onTap: () {
-          onMarkerTapped(markerId, detail, positionid, position);
+          onMarkerTapped(markerId, positionid, position);
         },
         icon: BitmapDescriptor.fromBytes(markerIcon),
         position: position);
@@ -90,11 +93,15 @@ class _ScreenrendringState extends State<Screenrendring> {
     });
   }
 
-  void onMarkerTapped(
-      MarkerId markerId, String? detail, int id, LatLng position) async {
-    print(markerposition);
-    print(markerposition!.length);
-    print(id);
+  void onMarkerTapped(MarkerId markerId, int id, LatLng position) async {
+    String info = '';
+    for (int i = 0; i < markerposition!.length; i++) {
+      if (markerposition![i]['id'] == id) {
+        setState(() {
+          info = markerposition![i]['detail'];
+        });
+      }
+    }
     showGeneralDialog(
       barrierLabel: "Barrier",
       barrierDismissible: true,
@@ -105,8 +112,8 @@ class _ScreenrendringState extends State<Screenrendring> {
         return Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            height: 400,
-            margin: EdgeInsets.only(bottom: 50, left: 20, right: 20),
+            height: 250,
+            margin: EdgeInsets.only(bottom: 100, left: 20, right: 20),
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(40),
@@ -114,21 +121,74 @@ class _ScreenrendringState extends State<Screenrendring> {
             child: SizedBox.expand(
               child: Column(
                 children: [
-                  Text(detail.toString()),
-                  ElevatedButton(
-                      onPressed: () {
-                        markerposition!.removeAt(id);
-                        setState(() => markers.remove(markerId));
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('Delete')),
-                  ElevatedButton(
-                      onPressed: () {
-                        markerposition!.removeAt(id);
-                        setState(() => markers.remove(markerId));
-                      },
-                      child: Text('Update')),
-                  UpdateMarker(markerposition: position),
+                  Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.black38,
+                    ),
+                    height: 50,
+                    child: Text(info.toString(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                            fontSize: 20)),
+                  ),
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              for (int i = 0; i < markerposition!.length; i++) {
+                                if (markerposition![i]['id'] == id) {
+                                  markerposition!.removeAt(i);
+                                }
+                              }
+                              setState(() => markers.remove(markerId));
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Delete')),
+                        ElevatedButton(
+                            onPressed: () {
+                              switchscreen?.icondetails.text = '';
+                              Navigator.of(context).pop();
+
+                              infoUpdate(id, info);
+                            },
+                            child: Text('Update Marker Info')),
+
+                        ///update marker using update marker widget passing param for conditio if user update or cancel
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              showModalBottomSheet<void>(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return StatefulBuilder(builder:
+                                        (BuildContext context,
+                                            StateSetter state) {
+                                      return Container(
+                                        height: 220,
+                                        child: SingleChildScrollView(
+                                          child: UpdateMarker(
+                                              markerposition: position,
+                                              id: id,
+                                              markerid: markerId),
+                                        ),
+                                      );
+                                    });
+                                  });
+                            },
+                            child: Text('Update Marker')),
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Close'))
+                      ])
                 ],
               ),
             ),
@@ -141,6 +201,36 @@ class _ScreenrendringState extends State<Screenrendring> {
           child: child,
         );
       },
+    );
+  }
+
+  void infoUpdate(int id, String info) async {
+    return showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Old Info : $info"),
+        content: TextField(
+          controller: switchscreen?.icondetails,
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(), hintText: 'Enter Icon Details'),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+              onPressed: () {
+                for (int i = 0; i < markerposition!.length; i++) {
+                  if (markerposition![i]['id'] == id) {
+                    setState(() {
+                      markerposition![i]['detail'] = icondetails.text;
+                    });
+                    print(icondetails.text);
+                    print(markerposition![i]['detail']);
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Update'))
+        ],
+      ),
     );
   }
 

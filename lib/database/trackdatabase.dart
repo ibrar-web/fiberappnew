@@ -13,15 +13,21 @@ class Data {
   final String name;
   var track;
   var markerposition;
+  var time;
 
-  Data({this.id, required this.name, this.track, this.markerposition});
+  Data(
+      {this.id,
+      required this.name,
+      this.track,
+      this.markerposition,
+      this.time});
 
   factory Data.fromMap(Map<String, dynamic> json) => new Data(
-        id: json['id'],
-        name: json['name'],
-        track: json['track'],
-        markerposition: json['markerposition'],
-      );
+      id: json['id'],
+      name: json['name'],
+      track: json['track'],
+      markerposition: json['markerposition'],
+      time: json['time']);
 
   Map<String, dynamic> toMap() {
     return {
@@ -29,6 +35,7 @@ class Data {
       'name': name,
       'track': track,
       'markerposition': markerposition,
+      'time': time
     };
   }
 }
@@ -41,6 +48,7 @@ class DatabaseHelper {
 
   Future<int?> addtrack(String data) async {
     Future<SharedPreferences> pref = SharedPreferences.getInstance();
+    DateTime time = DateTime.now();
     final SharedPreferences prefs = await pref;
     if (prefs.getString('trackslist') == null) {
       List<dynamic> trackslist = [];
@@ -61,7 +69,8 @@ class DatabaseHelper {
       "name": data,
       "track": switchscreen!.uploadtrack,
       "markerposition": switchscreen!.markerposition,
-      "id": id
+      "id": id,
+      "time": '$time'
     });
     prefs.setString('trackslist', jsonEncode(trackslist));
   }
