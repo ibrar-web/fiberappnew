@@ -35,45 +35,23 @@ class _ScreenrendringState extends State<Screenrendring> {
   bool startstop = false;
   MapType currentMapType = MapType.normal;
   int? mapnumber = 1;
-  String? markercurrenttype = "fiber";
+  String? markercurrenttype = "category1";
   String? currentmarker = '';
-  List<String> markertypelist = ["fiber", "power"];
+  List<String> markertypelist = ["category1"];
   List<String> currentmarkerslist = [];
   var markerlist = [
     [
-      'comms_pole',
-      'concrete_pole',
-      'drop_pole',
-      'fdh',
-      'fiber_interconnect',
-      'joint_usage_pole',
-      'pole to pole guy',
-      'riser_pole',
-      'telephone pole',
-      'utility pole',
-      'handhole1',
-      'manhole',
-      'trafficcabinet',
-      'optical cross connect',
-      'optical repeater',
-    ],
-    [
-      'utility pole',
-      'joint usage with power trasnformer',
-      'non sb power supply',
-      'power pole',
-      'power trasnformer platform',
-      'power trasnformer',
-      'sb power supply',
-      'steel pole',
-      'transmission line contact',
-      'handhole1',
-      'manhole',
-      'ac power inserter',
-      'centralized power supply',
-      'comms_pole',
-      'concrete_pole',
-      'drop_pole',
+      'FDH',
+      'Fiber-Interconnaction',
+      'Guy',
+      'Handhde',
+      'Junction-Blockv',
+      'ONT',
+      'Optical-Cross-Connect',
+      'Optical-Distribution-Frame',
+      'Optical-Line-Terminal',
+      'Optical-Repeator',
+      'Patch-Pannel'
     ]
   ];
   Map<PolylineId, Polyline> mapPolylines = {};
