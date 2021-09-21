@@ -126,7 +126,7 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                             switchscreen!.startstop = true;
                           });
                           await BackgroundLocation.startLocationService(
-                              distanceFilter: 5);
+                              distanceFilter: 0);
                         } else {
                           setState(() {
                             switchscreen!.startstop = false;
@@ -202,6 +202,10 @@ class _MapHomeScreenState extends State<MapHomeScreen> {
                                             Navigator.of(context).pop();
                                             DatabaseHelper.instance
                                                 .addtrack(textcontroller.text);
+                                            setState(() {
+                                              switchscreen!.startstop = false;
+                                              textcontroller.text = '';
+                                            });
                                           },
                                           child: Text('Save'))
                                     ],

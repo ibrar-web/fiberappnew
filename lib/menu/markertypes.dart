@@ -142,6 +142,7 @@ class _MarkertypesState extends State<Markertypes> {
                                     switchscreen!.id);
                                 Navigator.of(context).pop();
                                 switchscreen!.startstop = true;
+                                switchscreen?.icondetails.text = '';
                               },
                               child: Text('Insert'))
                         ],

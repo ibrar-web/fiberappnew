@@ -247,7 +247,6 @@ class _ScreenrendringState extends State<Screenrendring> {
             content: "Updated at ",
           );
         }
-
         setState(() {
           uploadtrack?.add({
             'lat': currentLocation.latitude!,
@@ -293,6 +292,7 @@ class _ScreenrendringState extends State<Screenrendring> {
       markers = {};
       markerposition = [];
       uploadtrack = [];
+      startstop = false;
     });
   }
 

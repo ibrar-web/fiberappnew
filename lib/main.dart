@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
+// import 'package:flutter_background_service/flutter_background_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  FlutterBackgroundService.initialize(onStart);
+  // FlutterBackgroundService.initialize(onStart);
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
