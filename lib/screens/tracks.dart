@@ -104,10 +104,51 @@ class _TrackspageState extends State<Trackspage> {
                                   color: Colors.indigo,
                                   icon: Icons.cloud,
                                   onTap: () {
-                                    setState(() {
-                                      DatabaseHelper.instance
-                                          .uploadtrack(data.id!);
-                                    });
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            content: Container(
+                                              height: 130,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                      "Uploading to server will delete from App"),
+                                                  SizedBox(
+                                                    height: 20,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              DatabaseHelper
+                                                                  .instance
+                                                                  .uploadtrack(
+                                                                      data.id!);
+                                                            });
+
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          //onPressed: null,
+                                                          child:
+                                                              Text('Upload')),
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: Text('Cancel'))
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        });
                                   },
                                 ),
                                 IconSlideAction(
